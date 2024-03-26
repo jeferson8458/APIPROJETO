@@ -61,6 +61,7 @@ app.post('/authenticate',async(request, reply) => {
             return reply.status(409).send({message: 'E-mail não existe'})
         }
 
+       
         const doesPasswordWatches = await compare(password, user.password_hash)
 
         if(!doesPasswordWatches){
