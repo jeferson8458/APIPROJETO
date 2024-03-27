@@ -2,10 +2,16 @@ import fastify from "fastify";
 import z from 'zod'
 import pgk from "bcryptjs"
 import {prisma} from './lib/prisma.js'
+import jwt from '@fastify/jwt'
+import { env } from "./env/index.js";
 
 const {compare, hash} = pgk
 
 const app = fastify()
+
+app.register(jwt,{
+    secret: env. JWT_SECRET
+})
 
 app.post('/users', async (request, reply) => {
     const registerBodySchema = z.object({
@@ -66,9 +72,19 @@ app.post('/authenticate',async(request, reply) => {
 
         if(!doesPasswordWatches){
             return reply.status(409).send({message: 'Credenciais inválidas'})
-    }
+        }
 
-    }catch{}
+       const token = await reply.jwtSign({},{
+        sign:{
+            sub: user.id
+        }
+       })
+
+       return reply.status(200).send({token})
+
+    }catch{
+        return reply.status(500).send({message: 'Error no servidor'})
+    }
 })
 
 app.listen({
